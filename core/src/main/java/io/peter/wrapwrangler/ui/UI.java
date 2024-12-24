@@ -42,7 +42,6 @@ public class UI {
 
         table.pad(10f);
 
-        table.setDebug(true);
 
         //set the table to fill its parent and add it to the stage (parent)
         table.setFillParent(true);
@@ -99,6 +98,12 @@ public class UI {
                 Gdx.app.log("PETER","right button clicked!");
             }
         });
+
+        debugSetup();
+    }
+
+    private void debugSetup() {
+        table.setDebug(true);
     }
 
     public Button getButtonLeft(){
