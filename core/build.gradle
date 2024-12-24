@@ -21,4 +21,10 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "net.onedaybeard.artemis:artemis-odb:$artemisVersion"
+  api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+
+
+  //box2D physics
+  api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+
 }
