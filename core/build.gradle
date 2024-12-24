@@ -8,4 +8,17 @@ dependencies {
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
   }
+
+  //  //HyperLap2D Runtime - this is a depdendency for a 2d level editor https://github.com/rednblackgames/hyperlap2d-runtime-libgdx
+  //0.1.5-SNAPSHOT is compatible with libGDX 1.13.0 and Artemis 2.3.0
+
+  ext.h2dVersion = "0.1.5-SNAPSHOT"
+  ext.artemisVersion = "2.3.0"
+  api "games.rednblack.hyperlap2d:runtime-libgdx:$h2dVersion"
+
+  //Mandatory
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "net.onedaybeard.artemis:artemis-odb:$artemisVersion"
 }
