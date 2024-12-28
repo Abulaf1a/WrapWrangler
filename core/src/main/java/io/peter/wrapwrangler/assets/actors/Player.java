@@ -1,6 +1,7 @@
 package io.peter.wrapwrangler.assets.actors;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -9,38 +10,42 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import io.peter.wrapwrangler.assets.AssetManager;
+import io.peter.wrapwrangler.screens.FirstScreen;
 
 public class Player {
-    //sprite
-    //physics etc.
 
     Sprite sprite;
+    Body body;
 
     int jumpForce;
 
     float speed;
 
-    Body body;
-
     public boolean isJumping;
     public boolean isOnFloor;
 
+    Vector2 origin;
 
-    public Player(int jumpForce, float speed, World world) {
+    public Player(Vector2 origin,World world, int jumpForce, float speed) {
+
+        this.origin = origin;
 
         sprite = new Sprite(AssetManager.actorTex);
-        sprite.setPosition(20, 50); //setting above floor to prevent initial collision
-        sprite.setSize(20, 50);
+        sprite.setOriginCenter();
+        sprite.setPosition(origin.x, origin.y); //setting above floor to prevent initial collision
+        sprite.setSize(50/FirstScreen.PPM, 100/FirstScreen.PPM); // 1 by 2 metres
 
         this.jumpForce = jumpForce;
         this.speed = speed;
-        BodyDef actorBodyDef = new BodyDef();
 
-        actorBodyDef.type = BodyDef.BodyType.DynamicBody;
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.fixedRotation = true;
 
-        actorBodyDef.position.set(sprite.getX(), sprite.getY());
+        //TODO PROJECT SPRITE POSITION AND SET AS BODYDEF POSITION/
+        bodyDef.position.set(sprite.getX()/FirstScreen.PPM, sprite.getY()/FirstScreen.PPM);
 
-        body = world.createBody(actorBodyDef);
+        body = world.createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
 
@@ -48,15 +53,26 @@ public class Player {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 4f;
+        fixtureDef.density = 40f;
         fixtureDef.restitution = 0f;
         fixtureDef.friction = 0.6f;
+
 
         body.createFixture(fixtureDef);
 
         body.setUserData(sprite);
 
         shape.dispose();
+    }
+
+    public void render(SpriteBatch spriteBatch){
+
+        Sprite bodySprite = (Sprite) body.getUserData();
+
+        bodySprite.setPosition((body.getPosition().x -  sprite.getWidth()/2), (body.getPosition().y - sprite.getHeight()/2));
+
+        bodySprite.draw(spriteBatch);
+
     }
 
     public void setPos(float x, float y){
