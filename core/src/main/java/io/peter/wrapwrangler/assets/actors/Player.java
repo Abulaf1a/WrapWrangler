@@ -1,7 +1,11 @@
 package io.peter.wrapwrangler.assets.actors;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -9,31 +13,51 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import io.peter.wrapwrangler.assets.AssetManager;
 import io.peter.wrapwrangler.screens.FirstScreen;
 
 public class Player {
-
-    Sprite sprite;
+    Vector2 previousPos;
+    Texture spriteSheet;
+    Animation<TextureRegion> animation;
+    public boolean flipNext;
+    public boolean isLeft;
+    float animTime;
     Body body;
-
     int jumpForce;
-
     float speed;
-
     public boolean isJumping;
     public boolean isOnFloor;
-
     Vector2 origin;
-
     public Player(Vector2 origin,World world, int jumpForce, float speed) {
+
+        previousPos = new Vector2(0,0);
+
+        flipNext = false;
+
+        spriteSheet = AssetManager.spriteSheet;
 
         this.origin = origin;
 
-        sprite = new Sprite(AssetManager.actorTex);
-        sprite.setOriginCenter();
-        sprite.setPosition(origin.x, origin.y); //setting above floor to prevent initial collision
-        sprite.setSize(50/FirstScreen.PPM, 100/FirstScreen.PPM); // 1 by 2 metres
+        TextureRegion[][] temp = TextureRegion.split(spriteSheet,
+            32,
+            32);
+
+        List<TextureRegion> actualList = new ArrayList<>();
+
+        for(TextureRegion[] col : temp){
+            actualList.addAll(Arrays.asList(col));
+        }
+
+        TextureRegion[] frames = actualList.toArray(new TextureRegion[actualList.size()]);
+
+        animation = new Animation<>(0.1f, frames);
+
+        animTime = 0f;
 
         this.jumpForce = jumpForce;
         this.speed = speed;
@@ -42,14 +66,13 @@ public class Player {
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.fixedRotation = true;
 
-        //TODO PROJECT SPRITE POSITION AND SET AS BODYDEF POSITION/
-        bodyDef.position.set(sprite.getX()/FirstScreen.PPM, sprite.getY()/FirstScreen.PPM);
+        bodyDef.position.set(animation.getKeyFrames()[0].getRegionWidth()/FirstScreen.PPM, animation.getKeyFrames()[0].getRegionHeight()/FirstScreen.PPM);
 
         body = world.createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
 
-        shape.setAsBox(sprite.getWidth()/2, sprite.getHeight()/2);
+        shape.setAsBox((float) animation.getKeyFrames()[0].getRegionWidth() /3, (float) animation.getKeyFrames()[0].getRegionHeight() /2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -60,18 +83,59 @@ public class Player {
 
         body.createFixture(fixtureDef);
 
-        body.setUserData(sprite);
+        body.setUserData(animation);
 
         shape.dispose();
     }
 
     public void render(SpriteBatch spriteBatch){
 
-        Sprite bodySprite = (Sprite) body.getUserData();
 
-        bodySprite.setPosition((body.getPosition().x -  sprite.getWidth()/2), (body.getPosition().y - sprite.getHeight()/2));
+        spriteBatch.end();
 
-        bodySprite.draw(spriteBatch);
+        animTime += Gdx.graphics.getDeltaTime(); //could pass in from screen render?
+
+
+        try{
+            TextureRegion currentFrame = animation.getKeyFrame(animTime, true);
+
+            spriteBatch.begin();
+
+            if(currentFrame != null && isOnFloor) {
+
+                animation.setFrameDuration(Math.abs(0.05f/(body.getPosition().x - previousPos.x)));
+
+                if(body.getLinearVelocity().x < 0f && flipNext){
+                    flipNext = false;
+                    isLeft = true;
+                    currentFrame.flip(true, false);
+                }
+                else if(body.getLinearVelocity().x > 0f && flipNext){
+                    flipNext = false;
+                    isLeft = false;
+                    currentFrame.flip(true, false);
+                }
+                if(body.getLinearVelocity().x > -0.1f && body.getLinearVelocity().x < 0.1f){
+                    animation.setFrameDuration(100f);
+                }
+
+                spriteBatch.draw(currentFrame, body.getPosition().x - currentFrame.getRegionWidth()/2, body.getPosition().y - currentFrame.getRegionWidth()/2);
+
+            }
+            else{
+                TextureRegion frame = animation.getKeyFrames()[1];
+                spriteBatch.draw(frame, body.getPosition().x - frame.getRegionWidth()/2, body.getPosition().y - frame.getRegionWidth()/2);
+            }
+
+        }
+        catch(Exception e){
+
+            Gdx.app.log("PETER", "Exception reading animation frame: " + e.getMessage());
+
+            TextureRegion frame = animation.getKeyFrames()[1];
+            spriteBatch.draw(animation.getKeyFrames()[1], body.getPosition().x - frame.getRegionWidth()/2, body.getPosition().y - frame.getRegionWidth()/2);
+
+        }
 
     }
 
@@ -81,15 +145,6 @@ public class Player {
 
     public Vector2 getPos(){
         return body.getPosition();
-    }
-
-
-    public Sprite getSprite() {
-        return sprite;
-    }
-
-    public void setSprite(Sprite sprite) {
-        this.sprite = sprite;
     }
 
     public int getJumpForce() {

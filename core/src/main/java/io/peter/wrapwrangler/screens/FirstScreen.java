@@ -27,14 +27,14 @@ public class FirstScreen implements Screen {
     public static float PPM = 5f;
     public static Viewport viewport;
     Texture backgroundTex;
-    Texture actorTex;
-    Texture floorTex;
 
     //TODO put intensive spritebatch into main game class. https://www.youtube.com/watch?v=mCdnFa3U9vs
     SpriteBatch spriteBatch;
-    //Sprite actorSprite;
-    Sprite floorSprite;
     Player player;
+
+
+    List<Floor> floorMap;
+    List<Vector2> positions;
 
     Floor floor;
 
@@ -94,10 +94,6 @@ public class FirstScreen implements Screen {
     private void input(float delta){
         Body actorBody = player.getBody();
 
-        Vector2 current = player.getPos();
-
-        //TODO - even with incredibly strong jump forces, the jump amt is limited - this metohd only calls ONCE when jump btn pressed.
-
         if(ui.getButtonJump().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -111,10 +107,14 @@ public class FirstScreen implements Screen {
 
         //go left and right more slowly while jumping? also continue to fall while going left and right -- e.g. you can't fly!
         if(ui.getButtonLeft().isPressed()){
+
+            if(!player.isLeft) player.flipNext = true;
+
             player.getBody().applyLinearImpulse(-40f*player.getBody().getMass(), physics.getWorld().getGravity().y * (float) Math.sqrt(actorBody.getMass()), player.getBody().getPosition().x,0, true);
         }
 
         else if(ui.getButtonRight().isPressed()){
+            if (player.isLeft) player.flipNext = true;
             actorBody.applyLinearImpulse(40f*actorBody.getMass(), physics.getWorld().getGravity().y * (float) Math.sqrt(actorBody.getMass()), actorBody.getPosition().x,0, true);
         }
         else{
@@ -126,11 +126,7 @@ public class FirstScreen implements Screen {
         if(ui.getDebugReset().isPressed()){
             actorBody.setTransform(2, 10, 0);
         }
-
-        Vector2 actual = player.getPos();
-
         gamecam.position.x = player.getPos().x;
-
     }
 
     private void logic(float delta) {
@@ -139,7 +135,6 @@ public class FirstScreen implements Screen {
     }
 
     private void draw(){
-        //clear the screen every frame to prevent artifacts
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
 
@@ -150,16 +145,13 @@ public class FirstScreen implements Screen {
 
         spriteBatch.draw(backgroundTex, gamecam.position.x - ((float) gamecam.viewportWidth/2), 0, (float) gamecam.viewportWidth, (float) gamecam.viewportHeight);
 
+        floorMap.forEach(floor -> floor.render(spriteBatch));
         floor.render(spriteBatch);
         floor2.render(spriteBatch);
         player.render(spriteBatch);
 
-
-        spriteBatch.setProjectionMatrix(ui.stage.getCamera().combined);
-
-        //call ui draw method to draw ui buttons over the top
+        spriteBatch.setProjectionMatrix(ui.stage.getCamera().combined); //doesn't seem necessary but for some reason doesn't render player without this line
         ui.drawUi(player);
-
         spriteBatch.end();
 
     }
@@ -168,11 +160,8 @@ public class FirstScreen implements Screen {
     public void resize(int width, int height) {
 
         gamecam.position.set(gamecam.viewportWidth/2, gamecam.viewportHeight/2, 0);
-
         gamecam.update();
-
         spriteBatch = new SpriteBatch();
-
         spriteBatch.setProjectionMatrix(gamecam.combined);
         // Resize your screen here. The parameters represent the new window size.
     }
