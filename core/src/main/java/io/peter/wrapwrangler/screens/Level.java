@@ -1,10 +1,6 @@
 package io.peter.wrapwrangler.screens;
 
-import static jdk.xml.internal.SecuritySupport.getClassLoader;
-
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -16,33 +12,23 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import io.peter.wrapwrangler.WW;
 import io.peter.wrapwrangler.assets.AssetManager;
+import io.peter.wrapwrangler.assets.actors.Baddie;
 import io.peter.wrapwrangler.assets.actors.Floor;
 import io.peter.wrapwrangler.assets.actors.Player;
+import io.peter.wrapwrangler.assets.actors.Spike;
+import io.peter.wrapwrangler.assets.actors.Wrap;
 import io.peter.wrapwrangler.physics.Physics;
 import io.peter.wrapwrangler.ui.UI;
 
 /** First screen of the application. Displayed after the application is created. */
-public class FirstScreen implements Screen {
+public class Level implements Screen {
 
     public static float PPM = 5f;
     public static Viewport viewport;
@@ -52,27 +38,33 @@ public class FirstScreen implements Screen {
     SpriteBatch spriteBatch;
     Player player;
 
-
-    List<Floor> floorMap;
+    List<Wrap> wraps;
+    List<Floor> floors;
+    List<Spike> spikes;
+    List<Baddie> baddies;
     List<Vector2> positions;
 
-    Floor floor;
-
-    Floor floor2;
     UI ui;
     Physics physics;
 
     Camera gamecam;
 
+    WW game;
+
+
+    public Level(WW game){
+        this.game = game;
+
+    }
+
     @Override
     public void show() {
-        ui = new UI();
         physics = new Physics();
 
         viewSetup(); //set up the viewport
         sceneSetup(); //Place assets in the scene
 
-        ui.uiSetup(viewport, spriteBatch); //set up UI
+        ui = new UI(viewport, spriteBatch); //set up UI
 
         physics.physicsSetup(this, PPM); //set up Box2D physics
 
@@ -112,29 +104,55 @@ public class FirstScreen implements Screen {
 //            throw new RuntimeException(e);
 //        }
 
-        floorMap = new ArrayList<>();
-        floorMap.add(new Floor(new Vector2(0,0), physics.getWorld()));
-        floorMap.add(new Floor(new Vector2(500, 50), physics.getWorld()));
-        floorMap.add(new Floor(new Vector2(1300, 50), physics.getWorld()));
+        floors = new ArrayList<>();
+        floors.add(new Floor(new Vector2(0,0), physics.getWorld()));
+        floors.add(new Floor(new Vector2(500, 50), physics.getWorld()));
+        floors.add(new Floor(new Vector2(1300, 50), physics.getWorld()));
+        floors.add(new Floor(new Vector2(2000, 70), physics.getWorld()));
+        floors.add(new Floor(new Vector2(2500, 420), physics.getWorld()));
+        floors.add(new Floor(new Vector2(2800, 0), physics.getWorld()));
+        floors.add(new Floor(new Vector2(3500, -50), physics.getWorld()));
+        floors.add(new Floor(new Vector2(4000, 75), physics.getWorld()));
+        floors.add(new Floor(new Vector2(4300, 500), physics.getWorld()));
+        floors.add(new Floor(new Vector2(4500, 20), physics.getWorld()));
+        floors.add(new Floor(new Vector2(5000, 20),physics.getWorld()));
+        floors.add(new Floor(new Vector2(5500, 20), physics.getWorld()));
+        floors.add(new Floor(new Vector2(6000, 20), physics.getWorld()));
+        floors.add(new Floor(new Vector2(6500, 20), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7000, 70), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 0), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 50), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 150), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 250), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 350), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 450), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 550), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 650), physics.getWorld()));
+        floors.add(new Floor(new Vector2(7500, 750), physics.getWorld()));
 
-        floorMap.add(new Floor(new Vector2(2000, 100), physics.getWorld()));
+        player = new Player(new Vector2(100, 100), physics.getWorld(), 600000, 5);
 
-        floorMap.add(new Floor(new Vector2(2500, 500), physics.getWorld()));
+        wraps = new ArrayList<>();
+        wraps.add(new Wrap(new Vector2( 1000, 400), physics.getWorld()));
+        wraps.add(new Wrap(new Vector2(2000, 200), physics.getWorld()));
+        wraps.add(new Wrap(new Vector2(4300, 700), physics.getWorld()));
+        wraps.add(new Wrap(new Vector2(6500, 400), physics.getWorld()));
+        //wraps.add(new Wrap(new Vector2(4300, 600)))
 
+        spikes = new ArrayList<>();
 
-        floorMap.add(new Floor(new Vector2(3000, 0), physics.getWorld()));
-        floorMap.add(new Floor(new Vector2(4000, 75), physics.getWorld()));
-        floorMap.add(new Floor(new Vector2(4000, 500), physics.getWorld()));
+        spikes.add(new Spike(new Vector2(1500, 120), physics.getWorld()));
+        spikes.add(new Spike(new Vector2(4000, 120), physics.getWorld()));
+        spikes.add(new Spike(new Vector2(3500, 50), physics.getWorld()));
 
-        player = new Player(new Vector2(100, 100), physics.getWorld(), 100000, 5);
-        floor = new Floor(new Vector2(0,0), physics.getWorld());
-        floor2 = new Floor(new Vector2(500, 50), physics.getWorld());
+        baddies = new ArrayList<>();
+        baddies.add(new Baddie(new Vector2(5500, 150), physics.getWorld()));
+        baddies.add(new Baddie(new Vector2(6500, 150), physics.getWorld()));
     }
 
     private void viewSetup() {
         gamecam = new OrthographicCamera();
         viewport = new ExtendViewport(800/PPM, 480/PPM, gamecam);
-        //viewport = new FitViewport(800/PPM, 480/PPM, gamecam);
 
         viewport.setCamera(gamecam);
 
@@ -144,7 +162,7 @@ public class FirstScreen implements Screen {
     private void sceneSetup() {
         spriteBatch = new SpriteBatch();
         spriteBatch.setProjectionMatrix(gamecam.combined);
-        backgroundTex = AssetManager.backgroundTex;
+        //backgroundTex = AssetManager.backgroundTex;
 
     }
 
@@ -179,14 +197,15 @@ public class FirstScreen implements Screen {
             if(player.isOnFloor) player.getAnimation().setFrameDuration(0.125f);
            // if(!player.isLeft) player.isLeft = true;
 
-            player.getBody().applyLinearImpulse(-40f*player.getBody().getMass(), physics.getWorld().getGravity().y * (float) Math.sqrt(actorBody.getMass()), player.getBody().getPosition().x,0, true);
+            //Y impluse is just a good enough approximation
+            player.getBody().applyLinearImpulse(-40f*player.getBody().getMass(), physics.getWorld().getGravity().y * (actorBody.getMass()/6), player.getBody().getPosition().x,0, true);
         }
 
         else if(ui.getButtonRight().isPressed()){
             if(player.isOnFloor) player.getAnimation().setFrameDuration(0.125f);
             //if (player.isLeft) player.isLeft = false;
 
-            actorBody.applyLinearImpulse(40f*actorBody.getMass(), physics.getWorld().getGravity().y * (float) Math.sqrt(actorBody.getMass()), actorBody.getPosition().x,0, true);
+            actorBody.applyLinearImpulse(40f*actorBody.getMass(), physics.getWorld().getGravity().y * (actorBody.getMass()/6), actorBody.getPosition().x,0, true);
         }
         else{
             if(actorBody.getLinearVelocity().x != 0f){
@@ -197,11 +216,14 @@ public class FirstScreen implements Screen {
 
         if(ui.getDebugReset().isPressed()){
             actorBody.setTransform(2, 10, 0);
+            actorBody.getFixtureList().get(0).setSensor(false);
         }
     }
 
     private void logic(float delta) {
         //called by render
+        baddies.forEach(baddie -> baddie.move(delta));
+
         //game logic goes here!
     }
 
@@ -211,15 +233,20 @@ public class FirstScreen implements Screen {
 
         gamecam.position.x = player.getBody().getPosition().x;
         gamecam.position.y = player.getPos().y > 0 ? player.getPos().y : 0;
-
         spriteBatch.setProjectionMatrix(gamecam.combined);
 
         //sprites should ONLY ever be drawn in between SpriteBatch begin() and end() methods
         spriteBatch.begin();
 
-        floorMap.forEach(floor -> floor.render(spriteBatch));
-        floor.render(spriteBatch);
-        floor2.render(spriteBatch);
+        floors.forEach(floor -> floor.render(spriteBatch));
+
+        wraps.forEach(wrap -> wrap.render(spriteBatch));
+
+        spikes.forEach(spike -> spike.render(spriteBatch));
+
+        baddies.forEach(baddie -> baddie.render(spriteBatch));
+
+
         player.render(spriteBatch);
 
         spriteBatch.setProjectionMatrix(ui.stage.getCamera().combined); //doesn't seem necessary but for some reason doesn't render player without this line
@@ -259,7 +286,7 @@ public class FirstScreen implements Screen {
 
         // TODO Dispose of all the things I create here to prevent memory leaks!
     }
-    
+
 
     public Player getPlayer() {
         return player;
