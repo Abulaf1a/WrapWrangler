@@ -5,16 +5,28 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import io.peter.wrapwrangler.assets.actors.Player;
+import io.peter.wrapwrangler.screens.Level;
+
 public class UI {
+
+
+
+    Button debugReset;
 
     Button leftBtn;
 
@@ -22,62 +34,75 @@ public class UI {
 
     Button jumpBtn;
 
+    static Label scoreLabel;
+
+    static int score;
+
     Skin skin;
 
-    Stage stage;
+    public Stage stage;
+
+    public float btnScale;
 
     Table table;
 
-    public void uiSetup(Viewport viewport) {
-        //a stage is an area to draw UI elements, a stage contains a table,
-        stage = new Stage(viewport);
+    static float PPM;
+    public UI(Viewport viewport, SpriteBatch spriteBatch) {
+        score = 0;
+        PPM = Level.PPM;
+        btnScale = 40f;
 
-        //usually, the table takes up the entire stage, but a stage can contain multiple tables
-        //https://libgdx.com/wiki/graphics/2d/scene2d/scene2d#stage
+        //https://libgdx.com/wiki/graphics/2d/scene2d/scene2d
+        stage = new Stage(viewport, spriteBatch);
         Gdx.input.setInputProcessor(stage);
-        //https://libgdx.com/wiki/graphics/2d/scene2d/table
         table = new Table();
-
         table.left().bottom();
-
-        table.pad(10f);
-
-
-        //set the table to fill its parent and add it to the stage (parent)
+        table.pad(10f/PPM);
         table.setFillParent(true);
+
         stage.addActor(table);
 
-        //A skin is a handy way to store all the information to apply to the UI elements
-        //a skin can also be loaded via JSON (possibly hyperlap2d?)
-        //https://libgdx.com/wiki/graphics/2d/scene2d/skin
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        //create a white colour pixmap
+
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGB565);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
-
-        //adds a white colour pixmap to the skin
         skin.add("white", new Texture(pixmap));
+        skin.add("default", new BitmapFont());
 
-        //adds a default font to the skin
-        skin.add("defualt", new BitmapFont());
+        table.setSkin(skin);
 
+        //Buttons
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = skin.newDrawable("white", Color.SLATE);
-        buttonStyle.down = skin.newDrawable("white", Color.RED);
-        buttonStyle.checked = skin.newDrawable("white", Color.FOREST);
+        buttonStyle.up = skin.newDrawable("white", Color.RED);
+        buttonStyle.down = skin.newDrawable("white", Color.FOREST);
+        buttonStyle.checked = skin.newDrawable("white", Color.RED);
         buttonStyle.over = skin.newDrawable("white", Color.CORAL);
 
         skin.add("default", buttonStyle);
 
         leftBtn = new Button(skin);
-        rightBtn = new Button(skin);
-        jumpBtn = new Button(skin);
+        leftBtn.setStyle(buttonStyle);
 
-        table.add(leftBtn).width(10f).height(10f).pad(2.5f);
-        table.add(rightBtn).width(10f).height(10f).pad(2.5f);
-        table.add(jumpBtn).width(10f).height(10f).pad(0f,25f, 2.5f, 0f);
+        rightBtn = new Button(skin);
+        rightBtn.setStyle(buttonStyle);
+
+        jumpBtn = new Button(skin);
+        jumpBtn.setStyle(buttonStyle);
+
+        debugReset = new Button(skin);
+        debugReset.setStyle(buttonStyle);
+
+        scoreLabel = new Label("Score: 0", skin);
+
+
+        table.add(leftBtn).width(btnScale/PPM).height(btnScale/PPM).pad(20f/PPM);
+        table.add(rightBtn).width(btnScale/PPM).height(btnScale/PPM).pad(20f/PPM);
+        table.add(jumpBtn).width(btnScale/PPM).height(btnScale/PPM).pad(0f,200f/PPM, 0f, 0f);
+        table.add(debugReset).width(btnScale/PPM).height(btnScale/PPM).pad(0f, 100f/PPM,0f, 0f);
+        table.add(scoreLabel).maxWidth(100f).height(20f/PPM).pad(0f, 0f, 0f, 0f);
+
 
         leftBtn.setVisible(true);
         rightBtn.setVisible(true);
@@ -88,7 +113,6 @@ public class UI {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 Gdx.app.log("PETER","left button clicked!");
-
             }
         });
 
@@ -118,9 +142,25 @@ public class UI {
         return jumpBtn;
     }
 
-    public void drawUi(){
+    public Button getDebugReset() {
+        return debugReset;
+    }
+
+    public void drawUi(Player player){
         stage.act(Gdx.graphics.getDeltaTime());
+
+        stage.getRoot().setX(player.getPos().x - stage.getWidth()/2);
+        stage.getRoot().setY(player.getPos().y > 0 ? player.getPos().y - stage.getHeight()/2 : 0 - stage.getHeight()/2) ;
         stage.draw();
     }
+
+    public static void updateScore(){
+
+        score += 1;
+
+        scoreLabel.setText( "Score: " + score);
+    }
+
+
 
 }
