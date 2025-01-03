@@ -3,7 +3,6 @@ package io.peter.wrapwrangler.assets.actors;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -18,14 +17,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.peter.wrapwrangler.assets.AssetManager;
-import io.peter.wrapwrangler.screens.FirstScreen;
+import io.peter.wrapwrangler.screens.Level;
 
 public class Player {
-    Vector2 previousPos;
     Texture spriteSheet;
     Animation<TextureRegion> animation;
-    public boolean flipNext;
-    public boolean isLeft;
+
+   //public boolean isLeft;
     float animTime;
     Body body;
     int jumpForce;
@@ -35,11 +33,7 @@ public class Player {
     Vector2 origin;
     public Player(Vector2 origin,World world, int jumpForce, float speed) {
 
-        previousPos = new Vector2(0,0);
-
-        flipNext = false;
-
-        spriteSheet = AssetManager.spriteSheet;
+        spriteSheet = AssetManager.cowboySpriteSheet;
 
         this.origin = origin;
 
@@ -55,7 +49,7 @@ public class Player {
 
         TextureRegion[] frames = actualList.toArray(new TextureRegion[actualList.size()]);
 
-        animation = new Animation<>(0.1f, frames);
+        animation = new Animation<>(0.25f, frames);
 
         animTime = 0f;
 
@@ -66,7 +60,7 @@ public class Player {
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.fixedRotation = true;
 
-        bodyDef.position.set(animation.getKeyFrames()[0].getRegionWidth()/FirstScreen.PPM, animation.getKeyFrames()[0].getRegionHeight()/FirstScreen.PPM);
+        bodyDef.position.set(animation.getKeyFrames()[0].getRegionWidth()/ Level.PPM, animation.getKeyFrames()[0].getRegionHeight()/ Level.PPM);
 
         body = world.createBody(bodyDef);
 
@@ -80,9 +74,7 @@ public class Player {
         fixtureDef.restitution = 0f;
         fixtureDef.friction = 0.6f;
 
-
         body.createFixture(fixtureDef);
-
         body.setUserData(animation);
 
         shape.dispose();
@@ -90,11 +82,9 @@ public class Player {
 
     public void render(SpriteBatch spriteBatch){
 
-
         spriteBatch.end();
 
         animTime += Gdx.graphics.getDeltaTime(); //could pass in from screen render?
-
 
         try{
             TextureRegion currentFrame = animation.getKeyFrame(animTime, true);
@@ -103,45 +93,37 @@ public class Player {
 
             if(currentFrame != null && isOnFloor) {
 
-                animation.setFrameDuration(Math.abs(0.05f/(body.getPosition().x - previousPos.x)));
-
-                if(body.getLinearVelocity().x < 0f && flipNext){
-                    flipNext = false;
-                    isLeft = true;
-                    currentFrame.flip(true, false);
-                }
-                else if(body.getLinearVelocity().x > 0f && flipNext){
-                    flipNext = false;
-                    isLeft = false;
-                    currentFrame.flip(true, false);
-                }
-                if(body.getLinearVelocity().x > -0.1f && body.getLinearVelocity().x < 0.1f){
-                    animation.setFrameDuration(100f);
-                }
-
-                spriteBatch.draw(currentFrame, body.getPosition().x - currentFrame.getRegionWidth()/2, body.getPosition().y - currentFrame.getRegionWidth()/2);
+                spriteBatch.draw(currentFrame,
+                    body.getPosition().x - currentFrame.getRegionWidth()/2,
+                    body.getPosition().y - currentFrame.getRegionWidth()/2
+                );
 
             }
             else{
                 TextureRegion frame = animation.getKeyFrames()[1];
-                spriteBatch.draw(frame, body.getPosition().x - frame.getRegionWidth()/2, body.getPosition().y - frame.getRegionWidth()/2);
+                spriteBatch.draw(frame,
+                    body.getPosition().x - frame.getRegionWidth()/2,
+                    body.getPosition().y - frame.getRegionWidth()/2);
             }
 
         }
         catch(Exception e){
 
             Gdx.app.log("PETER", "Exception reading animation frame: " + e.getMessage());
-
             TextureRegion frame = animation.getKeyFrames()[1];
             spriteBatch.draw(animation.getKeyFrames()[1], body.getPosition().x - frame.getRegionWidth()/2, body.getPosition().y - frame.getRegionWidth()/2);
 
         }
-
     }
 
     public void setPos(float x, float y){
 
     }
+
+    public Animation<TextureRegion> getAnimation() {
+        return animation;
+    }
+
 
     public Vector2 getPos(){
         return body.getPosition();
