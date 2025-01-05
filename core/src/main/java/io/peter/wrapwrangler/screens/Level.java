@@ -32,7 +32,6 @@ public class Level implements Screen {
 
     public static float PPM = 5f;
     public static Viewport viewport;
-    Texture backgroundTex;
 
     //TODO put intensive spritebatch into main game class. https://www.youtube.com/watch?v=mCdnFa3U9vs
     SpriteBatch spriteBatch;
@@ -42,7 +41,6 @@ public class Level implements Screen {
     List<Floor> floors;
     List<Spike> spikes;
     List<Baddie> baddies;
-    List<Vector2> positions;
 
     UI ui;
     Physics physics;
@@ -225,7 +223,7 @@ public class Level implements Screen {
         }
 
         else if(UI.getScore() == wraps.size()){
-            game.setScreen(new EndScreen(game, "Wow, you WON! Well done for collecting all the WRAPS!"));
+            game.setScreen(new EndScreen(game, "Wow, you WON! That just 'bout WRAPS that up, Partner! \n Some might say you're a real WRAP WRANGLER..."));
         }
 
     }
