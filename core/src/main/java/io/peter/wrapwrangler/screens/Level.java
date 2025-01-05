@@ -64,7 +64,7 @@ public class Level implements Screen {
         viewSetup(); //set up the viewport
         sceneSetup(); //Place assets in the scene
 
-        ui = new UI(viewport, spriteBatch); //set up UI
+        ui = new UI(viewport, spriteBatch, game); //set up UI
 
         physics.physicsSetup(this, PPM); //set up Box2D physics
 
@@ -137,7 +137,6 @@ public class Level implements Screen {
         wraps.add(new Wrap(new Vector2(2000, 200), physics.getWorld()));
         wraps.add(new Wrap(new Vector2(4300, 700), physics.getWorld()));
         wraps.add(new Wrap(new Vector2(6500, 400), physics.getWorld()));
-        //wraps.add(new Wrap(new Vector2(4300, 600)))
 
         spikes = new ArrayList<>();
 
@@ -153,17 +152,13 @@ public class Level implements Screen {
     private void viewSetup() {
         gamecam = new OrthographicCamera();
         viewport = new ExtendViewport(800/PPM, 480/PPM, gamecam);
-
         viewport.setCamera(gamecam);
-
         gamecam.position.set(viewport.getScreenWidth() /2f, viewport.getScreenHeight()/2f, 0f);
     }
 
     private void sceneSetup() {
         spriteBatch = new SpriteBatch();
         spriteBatch.setProjectionMatrix(gamecam.combined);
-        //backgroundTex = AssetManager.backgroundTex;
-
     }
 
     @Override
@@ -197,7 +192,7 @@ public class Level implements Screen {
             if(player.isOnFloor) player.getAnimation().setFrameDuration(0.125f);
            // if(!player.isLeft) player.isLeft = true;
 
-            //Y impluse is just a good enough approximation
+            //Y impulse is just a good enough approximation
             player.getBody().applyLinearImpulse(-40f*player.getBody().getMass(), physics.getWorld().getGravity().y * (actorBody.getMass()/6), player.getBody().getPosition().x,0, true);
         }
 
@@ -224,7 +219,15 @@ public class Level implements Screen {
         //called by render
         baddies.forEach(baddie -> baddie.move(delta));
 
-        //game logic goes here!
+        //player dies
+        if(player.getPos().y < -100){
+            game.setScreen(new TextScreen(game, "You DIED! Press anywhere to retry"));
+        }
+
+        else if(UI.getScore() == wraps.size()){
+            game.setScreen(new EndScreen(game, "Wow, you WON! Well done for collecting all the WRAPS!"));
+        }
+
     }
 
     private void draw(){
@@ -235,7 +238,7 @@ public class Level implements Screen {
         gamecam.position.y = player.getPos().y > 0 ? player.getPos().y : 0;
         spriteBatch.setProjectionMatrix(gamecam.combined);
 
-        //sprites should ONLY ever be drawn in between SpriteBatch begin() and end() methods
+        //sprites should ONLY ever be drawn in between SpriteBatch.begin() and end() methods
         spriteBatch.begin();
 
         floors.forEach(floor -> floor.render(spriteBatch));
@@ -249,7 +252,8 @@ public class Level implements Screen {
 
         player.render(spriteBatch);
 
-        spriteBatch.setProjectionMatrix(ui.stage.getCamera().combined); //doesn't seem necessary but for some reason doesn't render player without this line
+        //doesn't seem necessary but for some reason doesn't render player without this line
+        spriteBatch.setProjectionMatrix(ui.stage.getCamera().combined);
         ui.drawUi(player);
         spriteBatch.end();
 
