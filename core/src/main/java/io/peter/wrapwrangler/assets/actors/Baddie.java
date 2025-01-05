@@ -10,9 +10,10 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import io.peter.wrapwrangler.assets.AssetManager;
+import io.peter.wrapwrangler.assets.DmgObject;
 import io.peter.wrapwrangler.screens.Level;
 
-public class Baddie {
+public class Baddie extends DmgObject {
 
     boolean movingRight;
 
@@ -57,7 +58,7 @@ public class Baddie {
         fixtureDef.isSensor = true;
 
         body.createFixture(fixtureDef);
-        body.setUserData(sprite);
+        body.setUserData(this);
 
         shape.dispose();
 

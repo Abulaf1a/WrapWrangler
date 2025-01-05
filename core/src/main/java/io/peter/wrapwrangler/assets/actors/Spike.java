@@ -10,11 +10,11 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import io.peter.wrapwrangler.assets.AssetManager;
+import io.peter.wrapwrangler.assets.DmgObject;
 import io.peter.wrapwrangler.screens.Level;
 
-public class Spike {
+public class Spike extends DmgObject {
 
-    boolean isHit;
 
     Body body;
 
@@ -24,7 +24,6 @@ public class Spike {
 
     public Spike(Vector2 origin, World world){
 
-        isHit = false;
         sprite = new Sprite( AssetManager.spikeSprite);
 
         this.origin = origin;
@@ -62,12 +61,5 @@ public class Spike {
         sprite.draw(spriteBatch);
     }
 
-    public void onHit(Player player){
-        //increase player in x axis, make player fixture sensor.
-        if(!isHit){
-            player.getBody().applyLinearImpulse(new Vector2(0, player.getBody().getMass() * 20000f), player.getBody().getWorldCenter(), true);
-            player.getBody().getFixtureList().get(0).setSensor(true); //probably a hacky way of removing player's collision
-            isHit = true;
-        }
-    }
+
 }

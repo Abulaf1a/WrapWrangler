@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.peter.wrapwrangler.assets.actors.Baddie;
 import io.peter.wrapwrangler.assets.actors.Player;
 import io.peter.wrapwrangler.assets.actors.Spike;
 import io.peter.wrapwrangler.assets.actors.Wrap;
@@ -46,7 +47,7 @@ public class Physics {
                 System.out.println(contact.getFixtureA().getBody().getType() + " has contacted" + contact.getFixtureB().getBody().getType());
                 if(contact.getFixtureA().isSensor() || contact.getFixtureB().isSensor()){
                     //wrap is always FixtureB
-                    System.out.println("player has collided with wrap");
+                    System.out.println("player has collided with " + contact.getFixtureB().getBody().getUserData().getClass().getSimpleName());
 
                     Object contacted = contact.getFixtureB().getBody().getUserData();
 
@@ -69,8 +70,13 @@ public class Physics {
 
                         }
 
+                    else if(contacted instanceof Baddie){
+                        Baddie baddie = (Baddie) contact.getFixtureB().getBody().getUserData();
+                        baddie.onHit(level.getPlayer());
 
+                    }
                 }
+
                 else{
                     level.getPlayer().isJumping = false;
                     level.getPlayer().isOnFloor = true;
@@ -95,7 +101,7 @@ public class Physics {
 
             }
         });
-        debugRenderer = new Box2DDebugRenderer();
+        //debugRenderer = new Box2DDebugRenderer();
     }
 
     public void physicsProcess(float delta) {
@@ -107,7 +113,7 @@ public class Physics {
         //velocity and position iterations are apparently to do with physics simulation accuracy
         //higher = more accurate and slower to process.
         world.step(1/60f, 6, 2);
-        debugRenderer.render(world, Level.viewport.getCamera().combined);
+        //debugRenderer.render(world, Level.viewport.getCamera().combined);
     }
 
     public World getWorld(){
