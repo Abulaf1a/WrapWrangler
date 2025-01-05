@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.peter.wrapwrangler.WW;
 import io.peter.wrapwrangler.assets.actors.Player;
 import io.peter.wrapwrangler.screens.Level;
 
@@ -47,7 +48,7 @@ public class UI {
     Table table;
 
     static float PPM;
-    public UI(Viewport viewport, SpriteBatch spriteBatch) {
+    public UI(Viewport viewport, SpriteBatch spriteBatch, WW game) {
         score = 0;
         PPM = Level.PPM;
         btnScale = 40f;
@@ -100,8 +101,8 @@ public class UI {
         table.add(leftBtn).width(btnScale/PPM).height(btnScale/PPM).pad(20f/PPM);
         table.add(rightBtn).width(btnScale/PPM).height(btnScale/PPM).pad(20f/PPM);
         table.add(jumpBtn).width(btnScale/PPM).height(btnScale/PPM).pad(0f,200f/PPM, 0f, 0f);
-        table.add(debugReset).width(btnScale/PPM).height(btnScale/PPM).pad(0f, 100f/PPM,0f, 0f);
-        table.add(scoreLabel).maxWidth(100f).height(20f/PPM).pad(0f, 0f, 0f, 0f);
+        //table.add(debugReset).width(btnScale/PPM).height(btnScale/PPM).pad(0f, 100f/PPM,0f, 0f);
+        table.add(scoreLabel).maxWidth(100f).height(20f/PPM).pad(0f, 50f, 0f, 0f);
 
 
         leftBtn.setVisible(true);
@@ -123,7 +124,7 @@ public class UI {
             }
         });
 
-        debugSetup();
+        //debugSetup();
     }
 
     private void debugSetup() {
@@ -159,6 +160,10 @@ public class UI {
         score += 1;
 
         scoreLabel.setText( "Score: " + score);
+    }
+
+    public static int getScore(){
+        return score;
     }
 
 
