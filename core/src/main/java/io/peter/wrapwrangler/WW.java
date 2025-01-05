@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import io.peter.wrapwrangler.screens.MainMenu;
+import io.peter.wrapwrangler.screens.TextScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class WW extends Game {
@@ -36,6 +37,6 @@ public class WW extends Game {
 
         font.getData().setScale(viewport.getWorldHeight() / Gdx.graphics.getHeight());
 
-        setScreen(new MainMenu(this));
+        setScreen(new TextScreen(this, "WRAP WRANGLER, press anywhere to continue"));
     }
 }
